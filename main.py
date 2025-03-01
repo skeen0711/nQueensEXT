@@ -38,23 +38,22 @@ def place_queens(board, row, n, solutions):
     # Attempt to place a queen in each column of the current row
     for col in range(n):
         if not underAttack(board, row, col, n):
-            board[row] = 'Q'
+            board[row] = col
             place_queens(board, row + 1, n, solutions)
             board[row] = '.' # reset to empty to check next col for a possible Queen location
 
 def underAttack(board, row, col, n):
     """
     Check if the current square is under attack by a currently placed queen.
-    :param board: list of strings representing the board
+    :param board: list of column indexes representing the board
     :param row: Square's Row
     :param col: Square's Column
     :param n: Size of the board
     :return: True if under attack, False if safe
     """
-
     for prev_row in range(row):
         prev_col = board[prev_row]
-        if prev_col == 'Q':
+        if prev_col == '.':
             continue
         if prev_col == col or abs(row - prev_row) == abs(col - prev_col):
             return True
