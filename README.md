@@ -4,7 +4,7 @@ A solution to the [N-Queens problem (LC 51)](https://leetcode.com/problems/n-que
 
 ## Overview
 
-This project implements a Minimum Viable Product (MVP) for solving the N-Queens problem, with plans for an interactive dashboard extension. The MVP focuses on a distributed solver using RabbitMQ for task queuing, a REST API, and console output of solutions.
+This project implements N-Queens problem and extends to include the possibility of pre-placed queens and adds an api that can query the solver (/solve?n=9&preplaced=0,1) such that specific starting positions can be entered. In the case of large N the original solution becomes inpractical quickly. To counteract this I intend to use RabbitMQ to queue tasks for multiple workers to calculate concurrently
 
 ### MVP Features
 - **Input**: CSV format (e.g., `n, preplaced` like `8, [(0,1)]`).
