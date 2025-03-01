@@ -9,7 +9,7 @@ def solve_n_queens(n):
     """
     board = ["."] * n # one row of the board
     solutions = []
-    place_queens(board, n, solutions)
+    place_queens(board, 0, n, solutions)
 
     if not solutions:
         print("No solutions found.")
