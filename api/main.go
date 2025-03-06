@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"os/exec"
-	"strings"
 )
 
 type SolveResponse struct {
@@ -15,31 +14,47 @@ type SolveResponse struct {
 func solveHandler(w http.ResponseWriter, r *http.Request) {
 	n := r.URL.Query().Get("n")
 	preplaced := r.URL.Query().Get("preplaced") // e.g., "0,1"
+	log.Printf("Received request: n=%s, preplaced=%s", n, preplaced)
 
-	// Run Python solver
-	cmd := exec.Command("python3", "../src/main.py", n, preplaced)
-	output, err := cmd.Output()
-	if err != nil {
-		http.Error(w, "Solver failed: "+err.Error(), http.StatusInternalServerError)
-		return
+	var args []string
+	args = append(args, "../src/main.py", n)
+	if preplaced != "" {
+		args = append(args, preplaced) // Pass as-is, e.g., "0,1"
 	}
 
-	// Parse output (assuming Python prints JSON or a format you can convert)
-	// For now, mock a response based on console output
-	solutions := parsePythonOutput(string(output))
+	log.Println("Running Python solver...")
+	cmd := exec.Command("python3", args...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Python error: %v, output: %s", err, string(output))
+		http.Error(w, "Solver failed: "+err.Error()+", output: "+string(output), http.StatusInternalServerError)
+		return
+	}
+	log.Printf("Python output: %s", string(output))
+
+	log.Println("Parsing Python output...")
+	solutions, err := parsePythonOutput(output)
+	if err != nil {
+		log.Printf("Parse error: %v", err)
+		http.Error(w, "Failed to parse solver output: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	log.Printf("Returning %d solutions", len(solutions))
 	json.NewEncoder(w).Encode(SolveResponse{Solutions: solutions})
 }
 
-func parsePythonOutput(output string) [][][]string {
-	// Placeholder: Convert Python's printed boards to 2D arrays
-	// You'll need to modify main.py to output JSON or a parseable format
-	lines := strings.Split(output, "\n")
+func parsePythonOutput(output []byte) ([][][]string, error) {
 	var solutions [][][]string
-	// Logic to group lines into boards and solutions (TBD based on Python output)
-	return solutions
+	err := json.Unmarshal(output, &solutions)
+	return solutions, err
 }
 
 func main() {
 	http.HandleFunc("/solve", solveHandler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	srv := &http.Server{Addr: ":8080"}
+	go func() {
+		log.Fatal(srv.ListenAndServe())
+	}()
+	log.Println("Server running on :8080, press Ctrl+C to stop")
+	<-make(chan struct{}) // Wait forever until interrupted
 }
