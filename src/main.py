@@ -10,19 +10,20 @@ def solve_n_queens(n):
             print(f"\nSolution {i + 1}:")  # Fixed "/n"
             print_board(solution, n)
 
-def place_queens(board, row, n, solutions, preplaced=[]):
+def place_queens(board, row, n, solutions, preplaced):
     if row == n:
         solutions.append(board[:])
         return
-    if row in [p[0] for p in preplaced]:
+    if row in [p[0] for p in preplaced]:  # Skip preplaced rows
         if underAttack(board, row, board[row], n):
             return
         place_queens(board, row + 1, n, solutions, preplaced)
-    for col in range(n):
-        if not underAttack(board, row, col, n):
-            board[row] = col
-            place_queens(board, row + 1, n, solutions, preplaced)
-            board[row] = -1  # Consistent reset
+    else:
+        for col in range(n):
+            if not underAttack(board, row, col, n):
+                board[row] = col
+                place_queens(board, row + 1, n, solutions, preplaced)
+                board[row] = -1
 
 def underAttack(board, row, col, n):
     for prev_row in range(row):
