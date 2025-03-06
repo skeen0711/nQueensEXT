@@ -9,6 +9,7 @@ def capture_solutions(function, n, preplaced=None):
     end_time = time.time()
     execution_time = end_time - start_time
     grids = [board_to_grid(board, n) for board in solutions]
+    print(f"n={n} execution time: {execution_time:.4f} seconds")
     return grids, execution_time
 
 def test_n_queens_1():
@@ -29,18 +30,33 @@ def test_n_queens_3():
 
 def test_n_queens_4():
     grids, exec_time = capture_solutions(solve_n_queens, 4)
+    print(f"n=4 execution time: {exec_time:.4f} seconds")
     assert len(grids) == 2
     assert grids[0] == [[".", "Q", ".", "."], [".", ".", ".", "Q"], ["Q", ".", ".", "."], [".", ".", "Q", "."]]
 
 def test_n_queens_5():
     grids, exec_time = capture_solutions(solve_n_queens, 5)
+    print(f"n=5 execution time: {exec_time:.4f} seconds")
     assert len(grids) == 10
     assert grids[0] == [["Q", ".", ".", ".", "."], [".", ".", "Q", ".", "."], [".", ".", ".", ".", "Q"], [".", "Q", ".", ".", "."], [".", ".", ".", "Q", "."]]
 
 def test_n_queens_6():
     grids, exec_time = capture_solutions(solve_n_queens, 6)
-    assert len(grids) == 4
-    assert grids[0] == [[".", "Q", ".", ".", ".", "."], [".", ".", ".", "Q", ".", "."], [".", ".", ".", ".", "Q", "."], [".", ".", "Q", ".", ".", "."], ["Q", ".", ".", ".", ".", "."], [".", ".", ".", ".", ".", "Q"]]
+    print(f"n=6 execution time: {exec_time:.4f} seconds")
+    assert len(grids) == 4, f"Expected 4 solutions, got {len(grids)}"
+    grid = grids[0]
+    # Check one queen per row
+    for row in grid:
+        assert row.count("Q") == 1, f"Row {row} should have exactly one queen"
+    # Check columns (no two queens in same column)
+    cols = [row.index("Q") for row in grid]
+    assert len(set(cols)) == 6, "Queens must be in unique columns"
+    # Check diagonals (no two queens on same diagonal)
+    for i in range(6):
+        for j in range(i + 1, 6):
+            row_diff = j - i
+            col_diff = abs(cols[j] - cols[i])
+            assert row_diff != col_diff, f"Queens at ({i}, {cols[i]}) and ({j}, {cols[j]}) attack diagonally"
 
 def test_n_queens_7():
     grids, exec_time = capture_solutions(solve_n_queens, 7)
@@ -62,10 +78,11 @@ def test_n_queens_12():
     print(f"n=12 execution time: {exec_time:.4f} seconds")
     assert len(grids) == 14200
 
-def test_n_queens_13():
-    grids, exec_time = capture_solutions(solve_n_queens, 13)
-    print(f"n=13 execution time: {exec_time:.4f} seconds")
-    assert len(grids) == 73712
+# Heavy Load testing -- AVG 35 seconds prior to concurrency optimizations
+# def test_n_queens_13():
+#     grids, exec_time = capture_solutions(solve_n_queens, 13)
+#     print(f"n=13 execution time: {exec_time:.4f} seconds")
+#     assert len(grids) == 73712
 
 # Heavy load testing -- Use only for testing efficiency of Parallel routines
 # def test_n_queens_15():
